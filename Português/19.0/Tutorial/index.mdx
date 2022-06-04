@@ -1,0 +1,191 @@
+---
+title: 'Tutorial'
+slug: /tutorial
+---
+
+## Introdução
+
+Nesse tutorial, iremos ver como podemos construir aplicações 'web' usando 'Yew'.
+**'Yew'** é um moderno 'framework' em ['Rust'](https://www.rust-lang.org/) para a construção do 'front-end' de aplicativos 'web' usando ['WebAssembly'](https://webassembly.org/).
+'Yew' promove uma arquitetura bem estruturada, reusável e sustentável por meio do uso do incrível sistema de tipo do Rust.
+Uma grande comunidade cria bibliotecas, conhecidas, em Rust, como [crates](https://doc.rust-lang.org/book/ch07-01-packages-and-crates.html),
+provendo componentes para padrões, assim como o 'state management'.
+
+[Cargo](https://doc.rust-lang.org/cargo/), é o gerenciador de pacotes de Rust, que nos permite tirar vantagens de inúmeras 'crates' disponíveis em [crates.io](https://crates.io), tais como Yew.
+
+### O Que Iremos Construir
+
+'Rustconf' é uma conferência internacional da comunidade 'Rust', que acontece anualmente.
+'Rustconf' 2020 teve uma grande quantidade de conversas que proveram uma grande quantidade de informações.
+Nesse tutorial, nós iremos criar um aplicativo 'web' para ajudar os companheiros 'Rustaceans'
+conseguirem uma ideia sobre a conversa.
+
+
+
+## Se Preparando
+
+### Pré-requisitos
+
+Para começar, vamos garantir que o ambiente de desenvolvimento esteja atualizado.
+Nós iremos precisar das seguintes ferramentas:
+
+
+-   ['Rust'](https://www.rust-lang.org/)
+-   [`trunk`](https://trunkrs.dev/)
+-   `wasm32-unknown-unknown` target, o compilador e alvo WASM para Rust.
+
+Esse tutorial assume que você já está familiarizado com 'Rust'. Se não,
+o livro gratuito ['Rust Book'](https://doc.rust-lang.org/book/ch00-00-introduction.html) oferece uma ótima porta de entrada para
+iniciantes, e uma ótima fonte de conhecimento para desenvolvedores 'Rust' experientes.
+
+Garanta que a última versão do 'Rust' esteja instalada usando o comando `rustup update` ou por
+[installing rust](https://www.rust-lang.org/tools/install). Caso você já não tenha feito isso.
+
+Após a instalação do 'Rust', você pode usar o 'cargo' para instalar 'trunk' executando o comando:
+
+```bash
+cargo install trunk
+```
+
+Nós também precisamos adicionar o alvo de WASM:
+
+```bash
+rustup target add wasm32-unknown-unknown
+```
+
+
+### Configurando o Projeto
+
+Primeiro, criamos um novo projeto 'cargo':
+
+```bash
+cargo new yew-app
+cd yew-app
+```
+
+Para confirmar que o ambiente 'Rust' está configurado corretamente, execute o projeto inicial usando a ferramenta de 'build' do 'cargo':
+
+```bash
+cargo run
+```
+
+## Nossa Primeira Página Estática
+Para converter essa simples aplicação de 'CMD' para uma aplicação 'web' básica de 'Yew', algumas mudanças são necessárias.
+Atualize os arquivos como segue:
+
+```toml title="Cargo.toml" {7}
+[package]
+name = "yew-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
++ yew = "0.19"
+```
+
+```rust ,no_run title="src/main.rs"
+use yew::prelude::*;
+
+#[function_component(App)]
+fn app() -> Html {
+    html! {
+        <h1>{ "Hello World" }</h1>
+    }
+}
+
+fn main() {
+    yew::start_app::<App>();
+}
+```
+
+Agora, vamos criar um arquivo 'index.html' na base do projeto.
+
+
+```html title="index.html"
+<!DOCTYPE html>
+<html lang="en">
+    <head> </head>
+    <body></body>
+</html>
+```
+
+### Iniciando o Servidor De Desenvolvimento
+
+Execute o seguinte comando para compilar e executar o servidor da aplicação localmente.
+
+```bash
+trunk serve --open
+```
+
+'Trunk' irá abrir a sua aplicação no seu navegador padrão, monitora o diretório do seu projeto, e re-compila sua aplicação
+caso você modifique qualquer arquivo fonte. Se você estiver curioso, você pode executar o comando `trunk help` e `trunk help <subcommand>`
+para mais detalhes do que está acontecendo.
+
+
+### Parabéns
+
+Você conseguiu configurar o seu ambiente 'Yew' de desenvolvimento e construiu o seu primeiro programa web 'Yew'.
+
+## Construindo HTML
+'Yew' faz uso das macros procedurais de Rust para prover uma sintaxe similar a JSX (uma extensão de JavaScript, que permite você escrever código similar
+a HTML dentro do código JavaScript) para criar 'markup'.
+
+### Convertendo HTML clássico.
+
+Desde que já temos uma boa ideia de como noso 'website' vai se parecer, nós podemos, simplesmente, traduzir a nossa ideia mental em
+uma representação compatível com a macro 'html!'. Se você está confortável em escrever HTML simples, você não deve ter nenhum
+problema escrevendo dentro de 'html!'. É importante notar que a macro 'html!' difere de algumas formas de HTML:
+
+1. Expressões devem estar dentro de chaves (`{ }`)
+2. Só pode haver um nó raiz/base. Se você quiser  vários elementos fora de um container,
+uma tag vazia (`<> ... </>) é usada.
+3. Elementos devem ser sempre fechados propriamente.
+
+Queremos construir um 'layout' que se parece como o seguinte código de HTML bruto:
+
+```html
+<h1>RustConf Explorer</h1>
+<div>
+    <h3>Videos to watch</h3>
+    <p>John Doe: Building and breaking things</p>
+    <p>Jane Smith: The development process</p>
+    <p>Matt Miller: The Web 7.0</p>
+    <p>Tom Jerry: Mouseless development</p>
+</div>
+<div>
+    <h3>John Doe: Building and breaking things</h3>
+    <img
+        src="https://via.placeholder.com/640x360.png?text=Video+Player+Placeholder"
+        alt="video thumbnail"
+    />
+</div>
+```
+
+Agora, vamos converter o código HTML anterior para a macro 'html!'. Digite (ou copie/cole) o código a seguir no corpo
+da função 'app', de tal forma que o valor de 'html!' seja retornado.
+
+```rust ,ignore
+html! {
+    <>
+        <h1>{ "RustConf Explorer" }</h1>
+        <div>
+            <h3>{"Videos to watch"}</h3>
+            <p>{ "John Doe: Building and breaking things" }</p>
+            <p>{ "Jane Smith: The development process" }</p>
+            <p>{ "Matt Miller: The Web 7.0" }</p>
+            <p>{ "Tom Jerry: Mouseless development" }</p>
+        </div>
+        <div>
+            <h3>{ "John Doe: Building and breaking things" }</h3>
+            <img src="https://via.placeholder.com/640x360.png?text=Video+Player+Placeholder" alt="video thumbnail" />
+        </div>
+    </>
+}
+```
+
+Atualize a página do navegador, e você deve ver a seguinte saída a mostra:
+
+![Running WASM application screenshot](/img/tutorial_application_screenshot.png)
+
+
+### Usando a Linguagem Rust Para Construir 'Markup'
